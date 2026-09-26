@@ -7,3 +7,4 @@ SELECT cu.region, SUM(o.sales) as hodnota_predaja FROM customer cu JOIN orders o
 SELECT cu.customer_name, COUNT(o.order_id) as pocet_objednavok FROM customer cu LEFT JOIN orders o on cu.customer_id = o.customer_id GROUP BY cu.customer_name;
 SELECT pr.sub_category, AVG(o.discount) as priemerna_zlava FROM products pr JOIN orders o on pr.product_id = o.product_id GROUP BY pr.sub_category;
 SELECT cu.customer_name, SUM(o.sales) as hodnota_predaja FROM customer cu JOIN orders o on cu.customer_id = o.customer_id GROUP BY cu.customer_name HAVING SUM(o.sales) > 2000;
+SELECT cu.region, SUM(o.sales) as hodnota_predaja, AVG(o.discount) as priemerna_zlava, COUNT(o.order_id) as pocet_objednavok FROM customer cu JOIN orders o on cu.customer_id = o.customer_id GROUP BY cu.region;
