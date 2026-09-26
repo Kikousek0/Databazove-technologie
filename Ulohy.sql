@@ -1,1 +1,2 @@
 SELECT o.order_id, cu.customer_name, o.sales FROM orders o JOIN customer cu ON o.customer_id = cu.customer_id WHERE sales > 500 ORDER BY sales DESC;
+SELECT o.order_id, cu.customer_name, pr.category, o.sales FROM orders o JOIN customer cu ON o.customer_id = cu.customer_id JOIN products pr on o.product_id = pr.product_id;
