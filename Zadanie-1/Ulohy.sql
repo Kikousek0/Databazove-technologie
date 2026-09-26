@@ -4,3 +4,4 @@ SELECT cu.region, SUM(o.sales) as hodnota_predaja FROM customer cu LEFT JOIN ord
 SELECT pr.product_name, SUM(o.sales) as hodnota_predaja FROM products pr LEFT JOIN orders o on pr.product_id = o.product_id GROUP BY pr.product_name;
 SELECT cu.customer_name, o.order_id, o.sales FROM customer cu FULL JOIN orders o on cu.customer_id = o.customer_id;
 SELECT cu.region, SUM(o.sales) as hodnota_predaja FROM customer cu JOIN orders o on cu.customer_id = o.customer_id GROUP BY cu.region;
+SELECT cu.customer_name, COUNT(o.order_id) as pocet_objednavok FROM customer cu LEFT JOIN orders o on cu.customer_id = o.customer_id GROUP BY cu.customer_name;
