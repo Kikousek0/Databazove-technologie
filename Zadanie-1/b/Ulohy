@@ -1,0 +1,4 @@
+SELECT product_name, total_amount FROM flourmills_sales WHERE total_amount > (Select AVG(total_amount) FROM flourmills_sales);
+SELECT * FROM flourmills_sales WHERE product_category = (SELECT product_category FROM flourmills_sales GROUP BY product_category ORDER BY SUM(total_amount) desc LIMIT 1) ORDER BY sales_id ASC;
+SELECT product_name, total_amount, (SELECT AVG(total_amount) FROM flourmills_sales) as avg_amount FROM flourmills_sales;
+SELECT product_name, total_amount, total_amount/(SELECT SUM(total_amount) FROM flourmills_sales) as ammount_share FROM flourmills_sales;
