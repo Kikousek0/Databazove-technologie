@@ -1,13 +1,33 @@
-create view high_value_customers as SELECT cu.customer_id, cu.customer_name, SUM(o.sales) as total_sales FROM customer cu JOIN orders o on cu.customer_id = o.customer_id GROUP BY cu.customer_id HAVING SUM(o.sales) > 2000;
-SELECT * FROM high_value_customers;
-create view regional_monthly_sales as SELECT cu.region, date_trunc('month', order_date) as mesiac, SUM(o.sales)as monthly_sales FROM customer cu JOIN orders o on cu.customer_id = o.customer_id GROUP BY date_trunc('month', order_date), cu.region ORDER BY cu.region DESC;
-SELECT * FROM regional_monthly_sales;
-create view analyst_orders as SELECT order_id, customer_id, product_id, sales, quantity, discount FROM orders;
-SELECT * FROM analyst_orders;
-create INDEX idx_orders_customer_id on orders(customer_id);
-SELECT * FROM orders WHERE customer_id = 'C001';
-create INDEX idx_orders_order_date on orders(order_date);
-SELECT date_trunc('month', order_date) as mesiac, SUM(sales) as celkovy_predaj FROM orders GROUP BY date_trunc('month', order_date) ORDER BY mesiac ASC;
-create INDEX idx_orders_region_category on orders(customer_id, order_date);
-SELECT cu.customer_id, cu.customer_name, cu.region, o.order_date, o.profit FROM orders o JOIN customer cu on cu.customer_id = o.customer_id WHERE cu.region = 'West' AND o.order_date >= '2024-01-01';
-EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 'C001';
+CREATE DATABASE retail_sales;
+---tabulka---
+CREATE Table orders (
+    order_id VARCHAR(20) PRIMARY KEY,
+    customer_id VARCHAR(20) NOT NULL,
+    product_id VARCHAR(20) NOT NULL,
+    order_date DATE NOT NULL,
+    region VARCHAR(20) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    ship_mode VARCHAR(30) NOT NULL,
+    sales DECIMAL NOT NULL,
+    profit DECIMAL NOT NULL
+);
+ALTER DATABASE retail_sales SET datestyle TO 'ISO, MDY';
+---Ulohy---
+CREATE OR REPLACE PROCEDURE get_customer_sales(p_customer_id VARCHAR) LANGUAGE plpgsql AS $$ DECLARE v_total_sales NUMERIC;
+BEGIN SELECT COALESCE(SUM(sales), 0) INTO v_total_sales FROM orders WHERE customer_id = p_customer_id;
+RAISE NOTICE 'Zákazník: %, Celkový predaj: %', p_customer_id, v_total_sales;
+END; $$;
+CALL get_customer_sales('C001');
+CREATE OR REPLACE PROCEDURE apply_regional_discount(region_name VARCHAR, discount_rate NUMERIC) LANGUAGE plpgsql AS $$
+BEGIN UPDATE orders SET sales = sales * (1-discount_rate) WHERE region = region_name;
+RAISE NOTICE 'Aplikovaná zľava % pre región %.', discount_rate, region_name;
+END; $$;
+call apply_regional_discount('West', 0.10);
+SELECT order_id, region, sales 
+FROM orders 
+WHERE region = 'West';
+CREATE OR REPLACE PROCEDURE get_sales_between(start_date DATE, end_date DATE) LANGUAGE plpgsql AS $$ DECLARE v_total_sales NUMERIC;
+BEGIN SELECT COALESCE(SUM(sales),0) into v_total_sales FROM orders WHERE order_date BETWEEN start_date AND end_date;
+RAISE NOTICE 'Obdobie od: %, do: %, Celkový predaj: %', start_date, end_date, v_total_sales;
+END; $$;
+CALL get_sales_between('2024-01-01', '2024-03-31');
