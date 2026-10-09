@@ -10,3 +10,4 @@ create INDEX idx_orders_order_date on orders(order_date);
 SELECT date_trunc('month', order_date) as mesiac, SUM(sales) as celkovy_predaj FROM orders GROUP BY date_trunc('month', order_date) ORDER BY mesiac ASC;
 create INDEX idx_orders_region_category on orders(customer_id, order_date);
 SELECT cu.customer_id, cu.customer_name, cu.region, o.order_date, o.profit FROM orders o JOIN customer cu on cu.customer_id = o.customer_id WHERE cu.region = 'West' AND o.order_date >= '2024-01-01';
+EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 'C001';
