@@ -1,0 +1,14 @@
+SELECT product_name, total_amount FROM flourmills_sales WHERE total_amount > (Select AVG(total_amount) FROM flourmills_sales);
+SELECT * FROM flourmills_sales WHERE product_category = (SELECT product_category FROM flourmills_sales GROUP BY product_category ORDER BY SUM(total_amount) desc LIMIT 1) ORDER BY sales_id ASC;
+SELECT product_name, total_amount, (SELECT AVG(total_amount) FROM flourmills_sales) as avg_amount FROM flourmills_sales;
+SELECT product_name, total_amount, total_amount/(SELECT SUM(total_amount) FROM flourmills_sales) as ammount_share FROM flourmills_sales;
+SELECT mesiac, SUM(monthly_sales) FROM (SELECT EXTRACT(MONTH FROM sales_date) as mesiac, SUM(total_amount) as monthly_sales FROM flourmills_sales GROUP BY sales_date)GROUP BY mesiac ORDER BY mesiac desc;
+SELECT product_category, suma FROM (SELECT product_category, SUM(total_amount) as suma FROM flourmills_sales GROUP BY product_category) WHERE suma > 50000000 ORDER BY suma desc;
+SELECT f1.product_name, f1.product_category, f1.total_amount FROM flourmills_sales f1 WHERE f1.total_amount > (SELECT AVG(f2.total_amount) FROM flourmills_sales f2 WHERE f2.product_category = f1.product_category);
+SELECT f1.product_name, f1.region, f1.total_amount, (SELECT MIN(f2.total_amount) FROM flourmills_sales f2 WHERE f2.region = f1.region) as region_min_amount FROM flourmills_sales f1;
+SELECT * FROM flourmills_sales f1 WHERE EXISTS (SELECT 1 FROM flourmills_sales f2 WHERE f2.product_name = f1.product_name HAVING COUNT(DISTINCT EXTRACT(MONTH FROM f2.sales_date)) > 1);
+SELECT f1.product_category, f1.product_name, f1.total_amount FROM flourmills_sales f1 WHERE EXISTS (SELECT 1 FROM flourmills_sales f2 WHERE f1.product_category = f2.product_category);
+SELECT DISTINCT f1.product_category FROM flourmills_sales f1 WHERE EXISTS (SELECT 1 FROM flourmills_sales f2 WHERE f1.product_category = f2.product_category HAVING COUNT(DISTINCT region) > 3);
+SELECT DISTINCT f1.region FROM flourmills_sales f1 WHERE EXISTS (SELECT 1 FROM flourmills_sales f2 WHERE f1.region = f2.region AND EXTRACT(YEAR FROM f2.sales_date) = 2024);
+SELECT DISTINCT f1.product_category FROM flourmills_sales f1 WHERE NOT EXISTS (SELECT 1 FROM flourmills_sales f2 WHERE f1.product_category = f2.product_category AND f2.total_amount > 500000);
+SELECT DISTINCT f1.region FROM flourmills_sales f1 WHERE NOT EXISTS (SELECT 1 FROM flourmills_sales f2 WHERE f1.region = f2.region AND f2.product_category = 'Flour');
