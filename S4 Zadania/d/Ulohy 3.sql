@@ -50,3 +50,29 @@ LEAD(monthly_sales, 1) OVER (
     ORDER BY month
 ) AS next_month_sales
 FROM monthly_total_sales ORDER BY month ASC;
+-----
+WITH product_sales_summary AS (
+    SELECT p.category, p.product_name, SUM(o.sales) AS product_sales
+    FROM orders o JOIN products p ON o.product_id = p.product_id
+    GROUP BY p.category, p.product_name
+)
+SELECT *,
+    SUM(product_sales) OVER (
+        PARTITION BY category
+        ) AS category_total,
+    ROUND(product_sales * 100.0 / SUM(product_sales) OVER (
+        PARTITION BY category),
+        2
+    ) AS pct_of_category
+FROM product_sales_summary ORDER BY category ASC, pct_of_category DESC;
+-----
+WITH customer_orders_analysis AS (
+    SELECT cu.customer_id, cu.customer_name, MAX(o.order_date) OVER (
+        PARTITION BY cu.customer_id) AS last_order_date,
+        MAX(o.order_date) OVER () AS latest_order_date
+    FROM customer cu JOIN orders o ON cu.customer_id = o.customer_id
+)
+SELECT DISTINCT customer_id, customer_name, last_order_date
+FROM customer_orders_analysis
+WHERE last_order_date <= (latest_order_date - INTERVAL '90 days')
+ORDER BY last_order_date ASC;
