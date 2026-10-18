@@ -76,3 +76,36 @@ SELECT DISTINCT customer_id, customer_name, last_order_date
 FROM customer_orders_analysis
 WHERE last_order_date <= (latest_order_date - INTERVAL '90 days')
 ORDER BY last_order_date ASC;
+-----
+WITH monthly_sales_summary AS (
+    SELECT DATE_TRUNC('month', o.order_date) AS month, SUM(o.sales) AS monthly_sales
+    FROM orders o
+    GROUP BY DATE_TRUNC('month', o.order_date)
+),
+sales_with_lag AS (
+    SELECT *,
+        LAG(monthly_sales, 1) OVER (
+            ORDER BY month) AS prev_month_sales
+    FROM monthly_sales_summary
+)
+SELECT *,
+    (monthly_sales - prev_month_sales) AS sales_change,
+    ROUND(
+        ((monthly_sales - prev_month_sales) / prev_month_sales) * 100.0, 
+        2
+    ) AS growth_percentage
+FROM sales_with_lag ORDER BY month ASC;
+-----
+WITH first_purchase_months AS (
+    SELECT customer_id, DATE_TRUNC('month', MIN(order_date)) AS first_purchase_month
+    FROM orders
+    GROUP BY customer_id
+)
+SELECT COUNT(*) AS returning_customers_count
+FROM first_purchase_months fpm
+WHERE fpm.first_purchase_month = '2024-06-01'AND EXISTS (
+    SELECT 1 
+    FROM orders o 
+    WHERE o.customer_id = fpm.customer_id 
+    AND o.order_date > fpm.first_purchase_month
+);
