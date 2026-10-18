@@ -98,3 +98,40 @@ WITH ranked_purchases AS (
     WHERE customer_id IS NOT NULL
 )
 SELECT * FROM ranked_purchases WHERE rn = 1 ORDER BY customer_id ASC;
+-----
+WITH highest_value AS (
+    SELECT invoice_no, stock_code, description, quantity, unit_price,
+    (quantity * unit_price) as total_amount,
+    ROW_NUMBER() OVER(
+        PARTITION BY invoice_no
+        ORDER BY (quantity * unit_price) DESC
+    ) AS row_num
+    FROM retail_sales
+)
+SELECT * FROM highest_value WHERE row_num <= 3 ORDER BY invoice_no ASC, row_num ASC;
+-----
+WITH monthly_sales AS (
+    SELECT country, to_char(invoice_date, 'YYYY-MM') AS mesiac, customer_id,
+    SUM(quantity * unit_price) AS total_amount
+    FROM retail_sales
+    WHERE customer_id IS NOT NULL
+    GROUP BY country, to_char(invoice_date, 'YYYY-MM'), customer_id
+),
+ranked_monthly_customers AS (
+    SELECT *, dense_rank() OVER (
+        PARTITION BY country, mesiac
+        ORDER BY total_amount DESC
+    ) AS sales_rank
+    FROM monthly_sales
+)
+SELECT * FROM ranked_monthly_customers WHERE sales_rank <= 5 ORDER BY country ASC, mesiac ASC, sales_rank ASC, customer_id ASC;
+-----
+WITH ranked_invoice_prices AS (
+    SELECT invoice_no, stock_code, description, quantity, unit_price,
+        DENSE_RANK() OVER (
+            PARTITION BY invoice_no 
+            ORDER BY unit_price DESC
+        ) AS price_rank
+    FROM retail_sales
+)
+SELECT * FROM ranked_invoice_prices WHERE price_rank <= 5 ORDER BY invoice_no ASC, price_rank ASC, stock_code ASC;
