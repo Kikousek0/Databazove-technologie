@@ -1,0 +1,10 @@
+Error_type,Error_count
+duplicate_order_id,22
+missing_customer,22
+delivery_before_order,15
+invalid_order_date,17
+invalid_delivery_date,9
+invalid_phone,34
+invalid_quantity,24
+invalid_region,0
+invalid_product,31
